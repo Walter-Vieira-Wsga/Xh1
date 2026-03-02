@@ -116,6 +116,12 @@
 </div>
 {% endif %}
 
+
+<hr>
+<b>Detalhamento do Produto</b>
+{% for p in related_products %}
+  {{ product.as }}
+{% endfor %}
 <!-- JS PARA TROCAR IMAGEM -->
 <script>
 function changeMainImage(thumb) {

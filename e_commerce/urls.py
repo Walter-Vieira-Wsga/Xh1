@@ -32,6 +32,7 @@ urlpatterns = [
     path('search/', include("search.urls", namespace="search")),
     path('products/', include("products.urls", namespace="products")),
     path('vendors/', include("vendors.urls", namespace="vendors")),
+    path('orders/', include("orders.urls", namespace="orders")),    
     path('admin/', admin.site.urls),
 ]
 

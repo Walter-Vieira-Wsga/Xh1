@@ -1,9 +1,62 @@
-{% extends 'base.html' %}
+{% extends "vendors/base.html" %}
+
+{% block title %}Dashboard do Vendedor{% endblock %}
+
 {% block content %}
-<h1>Dashboard</h1>
-<ul>
-    <li>Produtos cadastrados: {{ products_count }}</li>
-    <li>Pedidos recebidos: {{ orders_count }}</li>
-    <li>Total de vendas: R$ {{ total_sales }}</li>
-</ul>
+
+<!-- PERFIL DO VENDEDOR -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body d-flex align-items-center">
+
+        {% if vendor.logo %}
+            <img src="{{ vendor.logo.url }}" class="rounded me-4" width="80">
+        {% else %}
+            <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center me-4"
+                 style="width:80px; height:80px;">
+                <strong>{{ vendor.name|first }}</strong>
+            </div>
+        {% endif %}
+
+        <div>
+            <h4 class="mb-1">{{ vendor.name }}</h4>
+            <p class="mb-0 text-muted">CNPJ: {{ vendor.cnpj }}</p>
+            <small class="text-muted">{{ request.user.email }}</small>
+        </div>
+    </div>
+</div>
+
+<!-- MÉTRICAS -->
+<div class="row">
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Produtos cadastrados</h6>
+                <h2 class="fw-bold">{{ products_count }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Pedidos recebidos</h6>
+                <h2 class="fw-bold">{{ orders_count }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Total vendido</h6>
+                <h2 class="fw-bold text-success">
+                    R$ {{ total_sales|floatformat:2 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}
