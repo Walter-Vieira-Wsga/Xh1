@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin_css.css' %}">
+
+<h1>Adicionar Produto</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ===== PRODUTO ===== -->
+    <fieldset>
+        <legend>Dados do Produto</legend>
+
+        {% for field in form %}
+            <div class="form-row">
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+    </fieldset>
+
+
+    <div class="submit-row">
+        <button type="submit">Salvar</button>
+    </div>
+</form>
+
+<!-- ===== JS MINIMAL (igual admin) ===== -->
+<!-- ===== TEMPLATE VAZIO (ADMIN FEEL) ===== -->
+<div id="empty-form-template" style="display:none;">
+    <div class="inline-form">
+        <input type="file" name="images-__prefix__-image">
+        <label>
+            Principal <input type="checkbox" name="images-__prefix__-is_main">
+        </label>
+    </div>
+</div>
+
+{% endblock %}

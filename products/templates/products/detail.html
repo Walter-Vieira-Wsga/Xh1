@@ -117,11 +117,165 @@
 {% endif %}
 
 
-<hr>
-<b>Detalhamento do Produto</b>
-{% for p in related_products %}
-  {{ product.as }}
-{% endfor %}
+
+<hr class="my-5">
+
+<h4 class="mb-4">Detalhamento do Produto</h4>
+
+<table class="table table-striped table-bordered">
+  <tbody>
+
+    {% if product.name_brand %}
+    <tr>
+      <th>Marca</th>
+      <td>{{ product.name_brand }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.manufacturer %}
+    <tr>
+      <th>Fabricante</th>
+      <td>{{ product.manufacturer }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.model_product %}
+    <tr>
+      <th>Modelo</th>
+      <td>{{ product.model_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.name_model_product %}
+    <tr>
+      <th>Nome do Modelo</th>
+      <td>{{ product.name_model_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.color_product %}
+    <tr>
+      <th>Cor</th>
+      <td>{{ product.color_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.inmetro_register %}
+    <tr>
+      <th>Registro INMETRO</th>
+      <td>{{ product.inmetro_register }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.part_number %}
+    <tr>
+      <th>Número da Peça</th>
+      <td>{{ product.part_number }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.special_features_product %}
+    <tr>
+      <th>Características Especiais</th>
+      <td>{{ product.special_features_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.unit_number_product %}
+    <tr>
+      <th>Número de Unidades</th>
+      <td>{{ product.unit_number_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.power_voltage_product %}
+    <tr>
+      <th>Voltagem</th>
+      <td>{{ product.power_voltage_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.power_watts_product %}
+    <tr>
+      <th>Potência</th>
+      <td>{{ product.power_watts_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.type_energy_source_product %}
+    <tr>
+      <th>Fonte de Energia</th>
+      <td>{{ product.type_energy_source_product }}</td>
+    </tr>
+    {% endif %}
+
+    <tr>
+      <th>Baterias Inclusas</th>
+      <td>{{ product.batteries_included|yesno:"Sim,Não" }}</td>
+    </tr>
+
+    {% if product.cells_batteries %}
+    <tr>
+      <th>Células de Bateria</th>
+      <td>{{ product.cells_batteries }}</td>
+    </tr>
+    {% endif %}
+
+    <tr>
+      <th>Funciona com Baterias</th>
+      <td>{{ product.works_batteries|yesno:"Sim,Não" }}</td>
+    </tr>
+
+    {% if product.diameter_product %}
+    <tr>
+      <th>Diâmetro</th>
+      <td>{{ product.diameter_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.package_dimensions %}
+    <tr>
+      <th>Dimensões do Pacote</th>
+      <td>{{ product.package_dimensions }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.type_material_product %}
+    <tr>
+      <th>Material</th>
+      <td>{{ product.type_material_product }}</td>
+    </tr>
+    {% endif %}
+
+    <tr>
+      <th>Contém Líquido</th>
+      <td>{{ product.contains_liquid|yesno:"Sim,Não" }}</td>
+    </tr>
+
+    {% if product.asin_product %}
+    <tr>
+      <th>ASIN</th>
+      <td>{{ product.asin_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.ean_product %}
+    <tr>
+      <th>EAN</th>
+      <td>{{ product.ean_product }}</td>
+    </tr>
+    {% endif %}
+
+    {% if product.ncm %}
+    <tr>
+      <th>NCM</th>
+      <td>{{ product.ncm }}</td>
+    </tr>
+    {% endif %}
+
+  </tbody>
+</table>
+
 <!-- JS PARA TROCAR IMAGEM -->
 <script>
 function changeMainImage(thumb) {

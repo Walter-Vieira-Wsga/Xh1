@@ -14,6 +14,7 @@
         <span class="navbar-brand">Painel do Vendedor</span>
 
         <div>
+            <a href="{% url 'vendors:vendor_products' %}" class="btn btn-outline-primary">📦 Meus Produtos</a>
             <a href="{% url 'vendors:vendor_dashboard' %}" class="btn btn-outline-light btn-sm">Dashboard</a>
             <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">Sair</a>
         </div>

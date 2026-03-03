@@ -9,6 +9,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from vendors.decorators import vendor_required
 from orders.models import OrderItem
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
+from products.models import Product
 
 
 @login_required
@@ -201,3 +204,16 @@ def vendor_required(view_func):
 
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+
+class VendorProductListView(LoginRequiredMixin, ListView):
+    model = Product
+    template_name = "vendors/vendor_product_list.html"
+    context_object_name = "products"
+
+    def get_queryset(self):
+        return Product.objects.filter(
+            vendor=self.request.user.vendor
+        ).order_by('-id')
+    

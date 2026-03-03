@@ -1,4 +1,8 @@
 from django.contrib import admin
-
 from .models import Tag
-admin.site.register(Tag)
+
+
+class TagsAdmin(admin.ModelAdmin):
+    list_display = ['title', 'slug',]  # remove 'slug'
+
+admin.site.register(Tag, TagsAdmin)

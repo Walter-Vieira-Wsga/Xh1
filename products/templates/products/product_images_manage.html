@@ -1,0 +1,28 @@
+<h2>Imagens – {{ product.name }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <table>
+        <tr>
+            <th>Imagem</th>
+            <th>Principal</th>
+            <th>Excluir</th>
+        </tr>
+
+        {% for form in formset %}
+        <tr>
+            <td>{{ form.image }}</td>
+            <td>{{ form.is_main }}</td>
+            <td>
+                {% if form.instance.pk %}
+                    {{ form.DELETE }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button type="submit">Salvar</button>
+</form>

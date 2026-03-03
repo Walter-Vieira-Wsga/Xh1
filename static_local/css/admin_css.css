@@ -1,0 +1,94 @@
+/* ====== BASE ADMIN ====== */
+body {
+    background: #f8f8f8;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+fieldset {
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+fieldset legend {
+    font-weight: bold;
+    padding: 0 5px;
+}
+
+/* ====== FORM ====== */
+.form-row {
+    margin-bottom: 12px;
+}
+
+.form-row label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+    width: 100%;
+    padding: 6px;
+}
+
+/* ====== INLINE IMAGES ====== */
+.inline-group {
+    border: 1px solid #ddd;
+    background: #fff;
+}
+
+.inline-group h2 {
+    background: #417690;
+    color: #fff;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.inline-form {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.inline-form:last-child {
+    border-bottom: none;
+}
+
+.inline-form input[type="file"] {
+    flex: 2;
+}
+
+.inline-form input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+.add-row {
+    padding: 10px;
+    background: #f5f5f5;
+    cursor: pointer;
+    color: #447e9b;
+    font-weight: bold;
+}
+
+/* ====== BUTTON ====== */
+.submit-row {
+    margin-top: 20px;
+}
+
+.submit-row button {
+    background: #417690;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+}
