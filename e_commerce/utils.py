@@ -18,22 +18,25 @@ def unique_order_id_generator(instance):
         return unique_slug_generator(instance)
     return order_new_id
 
+
 def unique_slug_generator(instance, new_slug=None):
-    """
-    This is for a Django project and it assumes your instance 
-    has a model with a slug field and a title character (char) field.
-    """
+    # Gera slug único baseado em: - title (Tag) - name (Product) #
+
     if new_slug is not None:
         slug = new_slug
     else:
-        slug = slugify(instance.title)
+        if hasattr(instance, 'title'):
+            slug = slugify(instance.title)
+        elif hasattr(instance, 'name'):
+            slug = slugify(instance.name)
+        else:
+            raise Exception("Model precisa ter 'title' ou 'name'.")
 
     Klass = instance.__class__
-    qs_exists = Klass.objects.filter(slug = slug).exists()
+    qs_exists = Klass.objects.filter(slug=slug).exists()
+
     if qs_exists:
-        new_slug = "{slug}-{randstr}".format(
-                    slug = slug,
-                    randstr = random_string_generator(size = 4)
-                )
-        return unique_slug_generator(instance, new_slug = new_slug)
+        new_slug = f"{slug}-{random_string_generator(size=4)}"
+        return unique_slug_generator(instance, new_slug=new_slug)
+
     return slug

@@ -14,4 +14,5 @@ urlpatterns = [
 
     # Admin / backoffice
     path('order/<int:order_id>/mark_paid/', views.mark_order_paid, name='mark_order_paid'),
+    path('checkout/remove/<int:item_id>/', views.remove_from_order, name='remove_from_order'),
 ]

@@ -1,5 +1,7 @@
 from django.db import models
 from vendors.models import Vendor
+from django.db.models.signals import pre_save
+from e_commerce.utils import unique_slug_generator
     
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -13,7 +15,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Categoria: ')
   
     name = models.CharField(max_length=255, verbose_name='Produto; ')
-    slug = models.SlugField(unique=True, verbose_name='Slug: ')  # 👈 ADICIONAR
+    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField(blank=True, verbose_name='Descrição: ')
     name_brand = models.CharField(max_length=30, null=True, blank=True, verbose_name='Nome da Marca: ')
     manufacturer = models.CharField(max_length=30, null=True, blank=True, verbose_name='Fabricante: ')
@@ -48,6 +50,9 @@ class Product(models.Model):
     def main_image(self):
         return self.images.filter(is_main=True).first() or self.images.first()    
     
+    
+
+    
 class ProductImage(models.Model):
     product = models.ForeignKey(
         Product,
@@ -61,3 +66,10 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Imagem de {self.product.name}"    
     
+
+    
+def product_pre_save_receiver(sender, instance, *args, **kwargs):
+        if not instance.slug:  # 🔒 Só gera se ainda não existir
+            instance.slug = unique_slug_generator(instance)
+    
+pre_save.connect(product_pre_save_receiver, sender=Product)

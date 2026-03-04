@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Relatório de Vendas (Itens)</h2>
+
+    <!-- ================= FILTROS ================= -->
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label>Data Inicial</label>
+            <input type="date" name="start" class="form-control" value="{{ start_date }}">
+        </div>
+        <div class="col-md-3">
+            <label>Data Final</label>
+            <input type="date" name="end" class="form-control" value="{{ end_date }}">
+        </div>
+        <div class="col-md-3">
+            <label>Vendedor</label>
+            <select name="vendor" class="form-control">
+                <option value="">Todos</option>
+                {% for v in vendors %}
+                <option value="{{ v.id }}" {% if vendor_id == v.id|stringformat:"s" %}selected{% endif %}>
+                    {{ v.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </form>
+
+    <!-- ================= TOTAIS ================= -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="alert alert-success">
+                Receita Bruta: <strong>R$ {{ total_revenue|floatformat:2 }}</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-info">
+                Frete Total: <strong>R$ {{ total_shipping|floatformat:2 }}</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-warning">
+                Comissão Marketplace: <strong>R$ {{ total_commission|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TABELA DETALHADA ================= -->
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Data</th>
+                <th>Produto</th>
+                <th>Vendedor</th>
+                <th>Qtd</th>
+                <th>Preço</th>
+                <th>Total Item</th>
+                <th>Frete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            <tr>
+                <td>{{ item.order_code }}</td>
+                <td>{{ item.order_date|date:"d/m/Y H:i" }}</td>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.vendor_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>R$ {{ item.price }}</td>
+                <td>R$ {{ item.item_total|floatformat:2 }}</td>
+                <td>R$ {{ item.shipping_total|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">Nenhuma venda encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

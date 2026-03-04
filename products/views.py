@@ -5,19 +5,34 @@ from products.forms import ProductForm
 from django.db.models import Prefetch
 from products.models import Product, Category, ProductImage
 from django.contrib.auth.mixins import LoginRequiredMixin
+from tags.models import Tag
 
 # Listagem de produtos ativos
 class ProductListView(ListView):
     model = Product
+    template_name = "products/product_list.html"
+    context_object_name = "products"
+    paginate_by = 12
 
     def get_queryset(self):
-        return Product.objects.prefetch_related(
-            Prefetch(
-                "images",
-                queryset=ProductImage.objects.filter(is_main=True),
-                to_attr="main_images"
-            )
-        )
+        qs = Product.objects.filter(active=True)
+        # 🔹 Filtro por busca
+        q = self.request.GET.get("q")
+        tag_slug = self.request.GET.get("tag")
+        if q:
+            qs = qs.filter(name__icontains=q)
+        if tag_slug:
+            qs = qs.filter(tags__slug=tag_slug)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 🔹 Todas as tags ativas para filtro lateral
+        context['all_tags'] = Tag.objects.filter(active=True)
+        # 🔹 Mantém tag selecionada no filtro
+        context['current_tag'] = self.request.GET.get("tag")
+        return context
+    
 
 # Detalhes do produto via slug
 class ProductDetailSlugView(DetailView):
@@ -54,6 +69,7 @@ class ProductCreateView(LoginRequiredMixin, View):
             'form': form,
             'formset': formset
         })
+    
 
     def post(self, request):
         form = ProductForm(request.POST)
@@ -68,6 +84,9 @@ class ProductCreateView(LoginRequiredMixin, View):
             formset.save()
 
             return redirect('vendors:vendor_dashboard')
+        
+        print(form.errors)
+        print('erros')
 
         return render(request, 'products/product_form.html', {
             'form': form,

@@ -1,11 +1,78 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
 {% block content %}
-<h1>Checkout</h1>
-<ul>
-    {% for product in cart_items %}
-    <li>{{ product.name }} - R$ {{ product.price }} - {{ product.vendor.company_name }}</li>
-    {% endfor %}
-</ul>
-<p>Total: R$ {{ total }}</p>
-<button class="btn btn-success">Finalizar Compra</button>
+<div class="container my-5">
+    <h1 class="mb-4">Finalizar Checkout</h1>
+
+    {% if order_items %}
+    <form method="POST" action="{% url 'orders:checkout' %}">
+        {% csrf_token %}
+
+        <!-- Tabela de itens -->
+        <h4>Itens do Pedido</h4>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Preço Unitário</th>
+                    <th>Quantidade</th>
+                    <th>Subtotal</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in order_items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>R$ {{ item.price|floatformat:2 }}</td>
+                    <td>
+                        <input type="number" name="quantity_{{ item.id }}" value="{{ item.quantity }}" min="1" class="form-control" style="width:80px;">
+                    </td>
+                    <td>R$ {{ item.price|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'orders:remove_from_order' item.id %}" class="btn btn-sm btn-danger">Remover</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Endereços -->
+        <div class="row my-4">
+            <div class="col-md-6">
+                <h5>Endereço de Envio</h5>
+                <address>
+                    {{ order.shipping_address.street }}<br>
+                    {{ order.shipping_address.city }}<br>
+                    {{ order.shipping_address.state }}, {{ order.shipping_address.zip }}<br>
+                    {{ order.shipping_address.country }}
+                </address>
+            </div>
+            <div class="col-md-6">
+                <h5>Endereço de Cobrança</h5>
+                <address>
+                    {{ order.billing_address.street }}<br>
+                    {{ order.billing_address.city }}<br>
+                    {{ order.billing_address.state }}, {{ order.billing_address.zip }}<br>
+                    {{ order.billing_address.country }}
+                </address>
+            </div>
+        </div>
+
+        <!-- Totais -->
+        <div class="mb-4">
+            <p><strong>Total do Carrinho:</strong> R$ {{ order.total|floatformat:2|add:"-"|add:order.shipping_total }}</p>
+            <p><strong>Total do Frete:</strong> R$ {{ order.shipping_total|floatformat:2 }}</p>
+            <p><strong>Total do Pedido:</strong> R$ {{ order.total|floatformat:2 }}</p>
+        </div>
+
+        <!-- Botão Finalizar -->
+        <button type="submit" class="btn btn-primary btn-lg w-100">Finalizar Pedido</button>
+    </form>
+    {% else %}
+        <p>Seu pedido está vazio.</p>
+        <a href="{% url 'products:product_list' %}" class="btn btn-secondary">Voltar aos Produtos</a>
+    {% endif %}
+</div>
 {% endblock %}

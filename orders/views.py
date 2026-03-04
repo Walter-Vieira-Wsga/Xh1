@@ -107,7 +107,8 @@ def checkout(request):
     cart_items.delete()
 
     return render(request, 'orders/checkout_success.html', {
-        'order': order
+        'order': order,
+        'order_items': order.items.all()
     })
 
 
@@ -135,3 +136,14 @@ def mark_order_paid(request, order_id):
     payouts.update(status='PENDING')
 
     return redirect('orders:view_cart')
+
+
+# Remover um item do carrinho antes do Checkout final #
+from django.shortcuts import redirect, get_object_or_404
+from orders.models import OrderItem
+
+@login_required
+def remove_from_order(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id, order__customer=request.user)
+    item.delete()
+    return redirect('orders:checkout')

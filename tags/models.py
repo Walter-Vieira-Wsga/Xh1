@@ -6,7 +6,7 @@ from django.db.models.signals import pre_save
 
 class Tag(models.Model):
     title = models.CharField(max_length=120)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
 

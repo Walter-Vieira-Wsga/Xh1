@@ -145,27 +145,55 @@ def vendor_register(request):
 # ==================================================
 # DASHBOARD DO VENDEDOR
 # ==================================================
-@vendor_required
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from orders.models import OrderItem, VendorPayout
+from django.db.models import Sum, F
+from datetime import datetime
+
+@login_required
 def vendor_dashboard(request):
-    vendor = request.user.vendor
+    vendor = request.user.vendor  # assume que User tem FK para Vendor
 
-    products_count = Product.objects.filter(vendor=vendor).count()
+    # Filtro por período (GET parameters)
+    start_date = request.GET.get('start')
+    end_date = request.GET.get('end')
 
-    orders_count = OrderItem.objects.filter(vendor=vendor).count()
+    order_items = OrderItem.objects.filter(vendor=vendor, order__status='paid')
 
-    total_sales = (
-        OrderItem.objects
-        .filter(vendor=vendor, status='paid')
-        .aggregate(total=Sum('price'))['total'] or 0
+    if start_date and end_date:
+        # converte strings para datetime
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        order_items = order_items.filter(order__created_at__range=[start_dt, end_dt])
+
+    # Total por produto
+    sales_by_product = (
+        order_items
+        .values('product__name')
+        .annotate(
+            total_quantity=Sum('quantity'),
+            total_revenue=Sum(F('quantity')*F('price'))
+        )
+        .order_by('-total_revenue')
     )
 
-    return render(request, 'vendors/dashboard.html', {
-        'vendor' : vendor,
-        'products_count': products_count,
-        'orders_count': orders_count,
-        'total_sales': total_sales,
-    })
+    # Total geral
+    total_sales = sum(item['total_revenue'] for item in sales_by_product)
 
+    # Status de repasse
+    payouts = VendorPayout.objects.filter(vendor=vendor).order_by('-created_at')
+
+    context = {
+        'sales_by_product': sales_by_product,
+        'total_sales': total_sales,
+        'payouts': payouts,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+    return render(request, 'vendors/dashboard.html', context)
 
 # ==================================================
 # LOGIN DO VENDEDOR

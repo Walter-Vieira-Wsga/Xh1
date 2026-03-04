@@ -32,7 +32,9 @@ urlpatterns = [
     path('search/', include("search.urls", namespace="search")),
     path('products/', include("products.urls", namespace="products")),
     path('vendors/', include("vendors.urls", namespace="vendors")),
-    path('orders/', include("orders.urls", namespace="orders")),    
+    path('orders/', include("orders.urls", namespace="orders")),  
+    path('tags', include("tags.urls", namespace="tags")),
+    path('reports/', include('reports.urls')),
     path('admin/', admin.site.urls),
 ]
 

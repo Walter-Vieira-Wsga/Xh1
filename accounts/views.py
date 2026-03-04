@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render,redirect
 from django.utils.http import url_has_allowed_host_and_scheme
 from .signals import user_logged_in
-
+from django.urls import reverse_lazy
 from .forms import LoginForm, RegisterForm, GuestForm
 from .models import GuestEmail
 
@@ -90,10 +90,20 @@ class LogoutView(View):
 #     logout(request)
 #     return render(request, "accounts/logout.html", context)
 
+User = get_user_model()
+
 class RegisterView(CreateView):
     form_class = RegisterForm
     template_name = 'accounts/register.html'
-    success_url = '/login/'
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        # Salva o usuário normalmente
+        user = form.save(commit=False)
+        # Pega parte do email antes do @ para usar como first_name
+        user.first_name = user.email.split('@')[0]
+        user.save()
+        return super().form_valid(form)
 
 # User = get_user_model()
 # def register_page(request):

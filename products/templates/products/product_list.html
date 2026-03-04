@@ -6,55 +6,95 @@
 <div class="container mt-4">
     <h2 class="mb-4">Produtos</h2>
 
-    <div class="row">
-        {% for object in object_list %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
+<!-- ====================== FILTRO LATERAL ====================== -->
+<div class="filters mb-4">
+    <h4>Filtrar por Tag:</h4>
+    {% for tag in all_tags %}
+        <a href="?tag={{ tag.slug }}"
+           class="badge rounded-pill {% if tag.slug == current_tag %}bg-primary text-white{% else %}bg-light text-dark{% endif %}">
+            {{ tag.title }}
+        </a>
+    {% endfor %}
+</div>
+<!-- ============================================================ -->
 
-                {# IMAGEM DO PRODUTO #}
-                {% with main_image=None %}
-                    {% for img in object.images.all %}
-                        {% if img.is_main and not main_image %}
-                            {% with img.image.url as main_image %}
-                            {% endwith %}
-                        {% endif %}
-                    {% endfor %}
+<div class="row">
+    {% for object in object_list %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
 
-                    {% if main_image %}
-                        <img src="{{ main_image }}" class="card-img-top product-image" alt="{{ object.name }}">
-                    {% elif object.images.all %}
-                        <img src="{{ object.images.all.0.image.url }}" class="card-img-top product-image" alt="{{ object.name }}">
-                    {% else %}
-                        <img src="https://via.placeholder.com/300x200?text=Sem+Imagem" class="card-img-top product-image">
+            <!-- IMAGEM DO PRODUTO -->
+            {% with main_image=None %}
+                {% for img in object.images.all %}
+                    {% if img.is_main and not main_image %}
+                        {% with img.image.url as main_image %}{% endwith %}
                     {% endif %}
-                {% endwith %}
+                {% endfor %}
 
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ object.name }}</h5>
+                {% if main_image %}
+                    <img src="{{ main_image }}" class="card-img-top product-image" alt="{{ object.name }}">
+                {% elif object.images.all %}
+                    <img src="{{ object.images.all.0.image.url }}" class="card-img-top product-image" alt="{{ object.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sem+Imagem" class="card-img-top product-image">
+                {% endif %}
+            {% endwith %}
 
-                    <p class="card-text">
-                        <strong>R$ {{ object.price }}</strong><br>
-                        {{ object.description }}
-                    </p>
-                    <!-- BOTÃO -->
-                    <a href="{% url 'products:product_detail' object.slug %}"
-                       class="btn btn-outline-primary mt-auto">
-                        Ver detalhes
-                    </a>
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ object.name }}</h5>
 
-                    <form method="POST" action="{% url 'carts:update' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="product_id" value="{{ object.id }}">
-                        <button type="submit" class="btn btn-primary w-100 mt-auto">
-                            🛒 Adicionar ao Carrinho
-                        </button>
-                    </form>
-                </div>
+                <p class="card-text">
+                    <strong>R$ {{ object.price }}</strong><br>
+                    {{ object.description }}
+                </p>
 
+                <!-- ====================== TAGS DO PRODUTO ====================== -->
+                {% if object.tags.all %}
+                <p>
+                    Tags: 
+                    {% for tag in object.tags.all %}
+                        <a href="?tag={{ tag.slug }}" class="badge bg-secondary text-white">
+                            {{ tag.title }}
+                        </a>
+                    {% endfor %}
+                </p>
+                {% endif %}
+                <!-- ============================================================ -->
+
+                <!-- BOTÃO DE DETALHE -->
+                <a href="{% url 'products:product_detail' object.slug %}"
+                   class="btn btn-outline-primary mt-auto mb-2">
+                    Ver detalhes
+                </a>
+
+                <!-- BOTÃO DE CARRINHO -->
+                <form method="POST" action="{% url 'carts:update' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ object.id }}">
+                    <button type="submit" class="btn btn-primary w-100">
+                        🛒 Adicionar ao Carrinho
+                    </button>
+                </form>
             </div>
+
         </div>
-        {% endfor %}
     </div>
+    {% endfor %}
+</div>
+
+<!-- PAGINAÇÃO OPCIONAL -->
+{% if is_paginated %}
+<div class="pagination mt-4 d-flex justify-content-center">
+    {% if page_obj.has_previous %}
+        <a href="?{% if current_tag %}tag={{ current_tag }}&{% endif %}page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary me-2">Anterior</a>
+    {% endif %}
+    <span class="align-self-center">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?{% if current_tag %}tag={{ current_tag }}&{% endif %}page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary ms-2">Próxima</a>
+    {% endif %}
+</div>
+{% endif %}
+
 </div>
 
 {% endblock %}

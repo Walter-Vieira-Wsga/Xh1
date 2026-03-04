@@ -64,12 +64,15 @@ class RegisterForm(forms.ModelForm):
     A form for creating new users. Includes all the required
     fields, plus a repeated password.
     """
+    email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=30, required=True, label='Nome')
+    last_name = forms.CharField(max_length=30, required=False, label='Sobrenome')
     password = forms.CharField(widget=forms.PasswordInput)
     password_2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ['email']
+        fields = ['email', 'first_name', 'last_name', 'password1', 'password2']
 
     def clean(self):
         '''

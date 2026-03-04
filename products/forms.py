@@ -11,6 +11,8 @@ class ProductForm(forms.ModelForm):
         'power_watts_product','type_energy_source_product', 'batteries_included', 'cells_batteries',
         'works_batteries', 'diameter_product', 'package_dimensions', 'type_material_product', 
         'contains_liquid', 'asin_product', 'ean_product', 'ncm', 'price', 'stock', 'active', ]
+        exclude = ['slug', 'vendor']  # 🔒 não expõe slug
+        
       
 
 ProductImageFormSet = inlineformset_factory(
