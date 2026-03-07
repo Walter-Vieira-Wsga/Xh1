@@ -114,3 +114,13 @@ class RegisterView(CreateView):
 #     if form.is_valid():
 #         form.save()
 #     return render(request, "accounts/register.html", context)
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')  # ou página de boas-vindas
+    else:
+        form = RegisterForm()
+    return render(request, 'accounts/register.html', {'form': form})

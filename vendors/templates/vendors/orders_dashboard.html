@@ -1,0 +1,159 @@
+{% extends "vendors/base.html" %}
+{% load math_filters %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Pedidos: {{ vendor.company_name }}</h2>
+    <hr>
+
+    <div class="row">
+        <!-- ================= FILTROS LATERAIS ================= -->
+        <!-- ================= FILTROS HORIZONTAIS ================= -->
+<div class="p-3 mb-4">
+    <form method="GET">
+        <div class="row g-2 align-items-end">
+
+            <div class="col-md-2">
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="paid" {% if status_filter == "paid" %}selected{% endif %}>Pendentes</option>
+                    <option value="shipped" {% if status_filter == "shipped" %}selected{% endif %}>Enviados</option>
+                    <option value="refunded" {% if status_filter == "refunded" %}selected{% endif %}>Devolvidos</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label>Data Inicial</label>
+                <input type="date" name="start" class="form-control" value="{{ start_date }}">
+            </div>
+
+            <div class="col-md-2">
+                <label>Data Final</label>
+                <input type="date" name="end" class="form-control" value="{{ end_date }}">
+            </div>
+
+            <div class="col-md-2">
+                <label>Produto</label>
+                <select name="product" class="form-control">
+                    <option value="">Todos</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}" {% if product_id == p.id|stringformat:"s" %}selected{% endif %}>
+                        {{ p.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label>Categoria</label>
+                <select name="category" class="form-control">
+                    <option value="">Todas</option>
+                    {% for c in categories %}
+                    <option value="{{ c.id }}" {% if category_id == c.id|stringformat:"s" %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label>Pedido / Email</label>
+                <input type="text" name="search" class="form-control" placeholder="#123 ou email" value="{{ search }}">
+            </div>
+
+            <div class="col-md-12 mt-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Filtrar
+                </button>
+
+                <a href="{% url 'vendors:vendor_orders_dashboard' %}" class="btn btn-secondary btn-sm">
+                    Limpar
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+        <!-- ================= TABELA DE PEDIDOS ================= -->
+        <div class="col-md-12">
+            <!-- Estatísticas rápidas -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="alert alert-primary text-center">
+                        Total de Pedidos<br>
+                        <strong>{{ total_orders }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-success text-center">
+                        Receita Total<br>
+                        <strong>R$ {{ total_revenue|floatformat:2 }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-warning text-center">
+                        Pendentes<br>
+                        <strong>{{ pending_orders }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Pedido</th>
+                        <th>Data Criação</th>
+                        <th>Cliente</th>
+                        <th>Produto</th>
+                        <th>Categoria</th>
+                        <th>Qtd</th>
+                        <th>Preço Unit.</th>
+                        <th>Total</th>
+                        <th>Status Atual</th>
+                        <th>Status Ação</th>
+                        <th>Status Cancela</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr>
+                        <td>#{{ item.order.order_id }}</td>
+                        <td>{{ item.order.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ item.order.billing_profile.email }}</td>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.product.category.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>R$ {{ item.price|floatformat:2 }}</td>
+                        <td>R$ {{ item.total_price|floatformat:2 }}</td>
+                        <td>{{ item.status|capfirst }}</td>
+                        <td>
+                            {% if item.status != 'shipped' and item.status != 'refunded' %}
+                                <a href="{% url 'vendors:advance_order_status' item.id %}" class="btn btn-sm btn-success mb-1">
+                                    Avançar 
+                                </a>
+                        </td>
+                        <td>
+                                <a href="{% url 'vendors:cancel_order_item' item.id %}" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Deseja realmente cancelar este pedido?');">
+                                    Cancelar
+                                </a>
+                            {% elif item.status == 'shipped' %}
+                                <span class="badge bg-info">Enviado</span>
+                            {% else %}
+                                <span class="badge bg-danger">Cancelado</span>
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center">Nenhum pedido encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

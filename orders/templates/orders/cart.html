@@ -9,12 +9,14 @@
         <td>{{ item.product.name }}</td>
         <td>{{ item.quantity }}</td>
         <td>R$ {{ item.subtotal }}</td>
-        <td><a href="{% url 'remove_from_cart' item.id %}">Remover</a></td>
+        <td><a href="{% url 'orders:remove_from_cart' item.id %}"
+            class="btn btn-danger btn-sm">
+            Remover</a></td>
     </tr>
     {% endfor %}
 </table>
 <p>Total: R$ {{ total }}</p>
-<a href="{% url 'checkout' %}">Finalizar Compra</a>
+<a href="{% url 'orders:checkout' %}">Finalizar Compra</a>
 {% else %}
 <p>Carrinho vazio</p>
 {% endif %}

@@ -7,5 +7,5 @@
 <p>Pedido ID: {{ order.id }}</p>
 <p>Total: R$ {{ order.total_amount }}</p>
 <p>O pagamento será processado e os vendedores receberão após a entrega.</p>
-<a href="{% url 'product_list' %}">Continuar Comprando</a>
+<a href="{% url 'products:product_list' %}">Continuar Comprando</a>
 {% endblock %}

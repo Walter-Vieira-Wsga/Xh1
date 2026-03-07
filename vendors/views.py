@@ -1,17 +1,22 @@
-from orders.models import CartItem, Order, OrderItem, VendorPayout
-from products.models import Product
-from vendors.models import Vendor
-from django.db.models import Sum
-from django.contrib.auth.decorators import login_required
-from vendors.forms import VendorForm
-from django.shortcuts import render, redirect, get_object_or_404
+from .models import Vendor
+from datetime import datetime
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from vendors.decorators import vendor_required
-from orders.models import OrderItem
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Case, When, Value, IntegerField
+from django.db.models import F, DecimalField, ExpressionWrapper, Case, When, IntegerField
+from django.db.models import F, ExpressionWrapper, DecimalField, Q
+from django.db.models import Sum, Count, Q
+from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView
+from orders.models import CartItem, Order, OrderItem, VendorPayout
+from orders.models import OrderItem, Order
 from products.models import Product
+from products.models import Product, Category
+from vendors.decorators import vendor_required
+from vendors.forms import VendorForm
+from vendors.models import Vendor
 
 
 @login_required
@@ -93,27 +98,24 @@ def checkout(request):
 
 # Atualização de Pedidos como "Pago" Manualmente
 #========================================================================#
-from django.shortcuts import render, redirect, get_object_or_404
-from orders.models import Order, OrderItem, VendorPayout
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def mark_order_paid(request, order_id):
     # Marca o pedido inteiro como pago manualmente
     order = get_object_or_404(Order, id=order_id)
-    order.status = 'PAID'
+    order.status = 'paid'
     order.save()
 
     # Atualiza todos os itens do pedido
     order_items = order.items.all()
     for item in order_items:
-        item.status = 'PAID'
+        item.status = 'paid'
         item.save()
 
     # Atualiza os VendorPayouts correspondentes
     payouts = VendorPayout.objects.filter(order_items__in=order_items).distinct()
     for payout in payouts:
-        payout.status = 'PENDING'  # ainda não pago ao vendedor
+        payout.status = 'pending'  # ainda não pago ao vendedor
         payout.save()
 
     return redirect('view_order', order_id=order.id)
@@ -198,9 +200,7 @@ def vendor_dashboard(request):
 # ==================================================
 # LOGIN DO VENDEDOR
 # ==================================================
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from vendors.models import Vendor
+
 
 def vendor_login(request):
     if request.user.is_authenticated:
@@ -245,3 +245,166 @@ class VendorProductListView(LoginRequiredMixin, ListView):
             vendor=self.request.user.vendor
         ).order_by('-id')
     
+
+# vendors/views.py
+# vendor_orders:  Gestão de Pedidos do Vendedor
+# O vendedor precisa ver apenas os pedidos que contêm seus produtos.
+#====================================================================
+
+@login_required
+def vendor_orders(request):
+    # Pega o vendedor logado
+    vendor = get_object_or_404(Vendor, user=request.user)
+
+    # Query dos pedidos do vendedor
+    order_items = OrderItem.objects.filter(vendor=vendor).select_related(
+        "order",
+        "product",
+        "order__billing_profile"
+    ).annotate(
+        total_price=ExpressionWrapper(
+            F('quantity') * F('price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        ),
+        # Prioridade: itens pendentes (não enviados) vêm primeiro
+        priority=Case(
+            When(status='PENDING', then=1),
+            When(status='PROCESSING', then=1),  # opcional, se houver outro status que significa "não enviado"
+            default=2,  # itens já enviados
+            output_field=IntegerField()
+        )
+    ).order_by('priority', '-order__created_at')  # Primeiro pendentes, depois históricos
+
+    context = {
+        "vendor": vendor,
+        "order_items": order_items,
+    }
+
+    return render(request, "vendors/orders.html", context)
+
+
+# vendors/views.py
+
+# vendors/views.py
+
+
+
+
+
+
+
+@login_required
+def vendor_orders_dashboard(request):
+    vendor = get_object_or_404(Vendor, user=request.user)
+    order_items = OrderItem.objects.filter(vendor=vendor).select_related(
+        "order",
+        "product",
+        "product__category",
+        "order__billing_profile"
+    )
+
+    # =================== FILTROS ===================
+    status_filter = request.GET.get('status')
+    start_date = request.GET.get('start')
+    end_date = request.GET.get('end')
+    product_id = request.GET.get('product')
+    category_id = request.GET.get('category')
+    search = request.GET.get('search')  # pedido id ou email
+
+    if status_filter:
+        order_items = order_items.filter(status__iexact=status_filter)
+
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d")
+            end = datetime.strptime(end_date, "%Y-%m-%d")
+            order_items = order_items.filter(order__created_at__range=[start, end])
+        except ValueError:
+            pass
+
+    if product_id:
+        order_items = order_items.filter(product__id=product_id)
+
+    if category_id:
+        order_items = order_items.filter(product__category__id=category_id)
+
+    if search:
+        order_items = order_items.filter(
+            Q(order__order_id__icontains=search) |
+            Q(order__billing_profile__email__icontains=search)
+        )
+
+    # =================== TOTAL PRICE ===================
+    order_items = order_items.annotate(
+        total_price=ExpressionWrapper(
+            F('quantity') * F('price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    ).order_by('status', '-order__created_at')  # pendentes primeiro
+
+    # =================== ESTATÍSTICAS ===================
+    total_orders = order_items.values('order').distinct().count()
+    total_revenue = order_items.aggregate(total=Sum('total_price'))['total'] or 0
+    pending_orders = order_items.filter(status='paid').count()
+    shipped_orders = order_items.filter(status='shipped').count()
+
+    context = {
+        "vendor": vendor,
+        "order_items": order_items,
+        "total_orders": total_orders,
+        "total_revenue": total_revenue,
+        "pending_orders": pending_orders,
+        "shipped_orders": shipped_orders,
+        "products": Product.objects.filter(vendor=vendor),
+        "categories": Category.objects.all(),
+        "status_filter": status_filter or "",
+        "start_date": start_date or "",
+        "end_date": end_date or "",
+        "product_id": product_id or "",
+        "category_id": category_id or "",
+        "search": search or "",
+    }
+
+    return render(request, "vendors/orders_dashboard.html", context)
+
+@login_required
+def mark_item_shipped(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id, vendor__user=request.user)
+    item.status = 'SHIPPED'
+    item.save()
+    return redirect('vendors/orders_dashboard.html')  # ou o nome correto do seu dashboard
+
+
+# Atualização do Estágio do Status
+#====================================
+# vendors/views.py
+
+from orders.models import OrderItem, ORDER_STATUS_CHOICES
+
+@login_required
+def advance_order_status(request, item_id):
+    status_flow = [s[0] for s in ORDER_STATUS_CHOICES]
+
+    item = get_object_or_404(OrderItem, id=item_id, vendor__user=request.user)
+
+    try:
+        current_index = status_flow.index(item.status)
+        if current_index < len(status_flow) - 1:
+            item.status = status_flow[current_index + 1]
+            item.save()
+    except ValueError:
+        item.status = 'created'
+        item.save()
+
+    return redirect('vendors:vendor_orders_dashboard')
+
+@login_required
+def cancel_order_item(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id, vendor__user=request.user)
+
+    # Só permite cancelar se ainda não enviado
+    if item.status not in ['shipped', 'refunded']:
+        item.status = 'refunded'  # ou 'canceled' se preferir
+        item.save()
+
+    return redirect('vendors:vendor_orders_dashboard')

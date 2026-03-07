@@ -7,8 +7,16 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     
+    marketplace_fee = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=10,
+        verbose_name="Comissão do Marketplace (%)"
+    )
+
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.marketplace_fee}%)"
+    
 
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, verbose_name='Vendedor: ')
